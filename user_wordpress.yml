@@ -1,0 +1,41 @@
+#cloud-config
+ssh_pwauth: no
+users:
+  - name: nikita
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDESYfQZGU32p43lEeHsxYCAZ77NMRD+kox0s9w60x4MiO42FZsC2bATaI7rgmE2ySV7wMrzRxHcoEgpwTfCd5qj8C+d/421pzhJAcmYZ5f0bESQR1qCq20hibmzhtSsyCtDHJgPPBt3SZz9rRn7GIQtKMXYgT2VPwn55gHfeZYx+6KsQGliDVlYwzaIdlrVP6UPXq27BMuYVmLZRLROC6ntXZWCU4OoQ70rP8eRzwej9dDYhvjVVJxggDbfzM7X6bv5aKexEJ20vnu1uf3yXedj5zrqbSEGLdomNzHcfMrPP+o4h8Lme4XGQjjVW3xT00dXOSm7w0EeP1sE8ds39ZV84qzoNaOQRgkwaDHeQRlGHmr1aKrpy1kKi0yLJHiSl9X6f8IwNpE+MTiI+/Gslha1aqjBLq+kx4jQs42GRtfJlo2quQ2Jxq2vdFrNPjG/gwgRiXOvqC7kmWO9j1xZ6YuQQcTSg/FnCSZMkUYnZRl3cf1kv3R3dQO7ECq9oPPHw8=
+  - name: deployment
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCRBMdFa/2PQLvy/0C0kEl9b5jUPMfBCzBwUlS1s9zlyvov1nSiyOpVoibAK9WLOczpzFJs4HDiYHHREdU5pZrEwP/LvvCL7bYHRjrL21COt3qWpomq20SLsT/+UCkGIR/IwTHFqC+2LBGeDNdHzv8t7LTX7fG7I0nrtWQEyf30sP/eJ+ibe6aaQ+zVvhmpk+DeIh5jQlKxapxX6JXbA0umb6fAEVUHG4RUSRq8sSudBwtLfc1Y92tRw+KzIRbfE/n7nbrbBg0K7ij+mBp+5kdfhhYgajKM9sRU6rMQj0Tiz3TlzilqUy2abgFuc1V6QEewNipLbKLrF/0IJgXqIsSNKEsyfMzdXt2SpTD4Spi8Sg+bqbP1QqzgT8/z1sIDUW9XjgFqC8LzvV1xa3flhP0oTA1n36cyaXuRIYTS8w95mzPBBDbFFsp2KMtOKQiwhBi9uf0gVO/CqFOvktw9gzXLLezjnFkwsl5Ka9szx2t3P/pwDigiF+s5HEAvwQ0LrfUc361L4Q4jfa9DLmQwKjUFN5d8mbA59nzd+CQHX7g4UTPXyLkXyYch/en2e1i63BButsY2M4kD/3aPwABn6JXnoAqaaHbjWGbroj14+CBfuxKobc9Df8WigBt7hE8a3X1b8sLu3gVM/MMKo6BwnSjzN6+Z3L8h0+4IZzDyrnVQuQ==
+write_files:
+  - path: /etc/ssh/sshd_config
+    content: |
+         Port 2222
+         HostKey /etc/ssh/ssh_host_rsa_key
+         #HostKey /etc/ssh/ssh_host_dsa_key
+         HostKey /etc/ssh/ssh_host_ecdsa_key
+         HostKey /etc/ssh/ssh_host_ed25519_key
+         SyslogFacility AUTHPRIV
+         AuthorizedKeysFile .ssh/authorized_keys
+         PasswordAuthentication no
+         ChallengeResponseAuthentication no
+         GSSAPIAuthentication yes
+         GSSAPICleanupCredentials no
+         PermitRootLogin no
+         UsePAM yes
+         X11Forwarding yes
+         AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+         AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+         AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+         AcceptEnv XMODIFIERS
+         Subsystem sftp  /usr/libexec/openssh/sftp-server
+         AllowUsers nikita deployment
+runcmd:
+  - semanage port -a -t ssh_port_t -p tcp 2222
+  - systemctl restart sshd
